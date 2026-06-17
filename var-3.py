@@ -1,17 +1,17 @@
 """
 Decision-Level Fusion: BSIF-KNN (Decision I) + ViT (Decision II)
-Author: Morteza Farrokhnejad
+Author: Morteza Farrokhnejad, Prof. Dr. Hasan Demirel
 =================================================================
 
+This code replicates the following paper but uses a different architecture for decision II: https://link.springer.com/article/10.1007/s11760-020-01765-6
 
-
-Architecture (adapted to user's own pipelines):
+Architecture:
   Decision I  — BSIF texture features on 5 overlapping sub-regions
                 → score-level fusion (histogram concatenation)
                 → Manhattan-distance KNN classifier
   Decision II — vit_small_patch16_224 fine-tuned end-to-end
                 → strong augmentation, AdamW, cosine LR, label smoothing
-  Fusion      — Weighted OR Rule (threshold = 0.9, same as paper §3.6)
+  Fusion      — Weighted OR Rule (threshold = 0.9, same as paper )
 
 Experiment:
   • 5 repeated runs per dataset (seeds 11,22,33,44,55)
@@ -71,12 +71,12 @@ from sklearn.neighbors import KNeighborsClassifier
 
 DATASET_CONFIGS: Dict[str, Dict] = {
     "PolyU": {
-        "roi_dir": r"C:\Users\Asus\Desktop\Work\Research - Palm vein Finilized\Data\PolyUV2\ROI",
+        "roi_dir": r"PATH GOES HERE", # Add the paths
         "num_classes": 386,
     },
     "FYODB": {
-        "session1_dir": r"C:\Users\Asus\Desktop\Work\Research - Palm vein Finilized\Data\FYODB\FYODB\ROI\Session1",
-        "session2_dir": r"C:\Users\Asus\Desktop\Work\Research - Palm vein Finilized\Data\FYODB\FYODB\ROI\Session2",
+        "session1_dir": r"PATH GOES HERE", # Add the paths
+        "session2_dir": r"PATH GOES HERE", # Add the paths
         "num_classes": 160,
     },
 }
@@ -123,7 +123,7 @@ IMAGENET_STD  = (0.229, 0.224, 0.225)
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Fusion hyper-parameter  (paper §3.6 — Weighted OR Rule)
+# Fusion hyper-parameter  (Weighted OR Rule)
 # ──────────────────────────────────────────────────────────────────────────────
 
 FUSION_THRESHOLD = 0.9   # True=1, False=0; sum >= threshold → accept
@@ -182,7 +182,7 @@ METRIC_COLS: List[str] = [
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Live CSV writer  (from 2_ViT_best.py)
+# Live CSV writer 
 # ──────────────────────────────────────────────────────────────────────────────
 
 class LiveCSVWriter:
@@ -278,7 +278,7 @@ def get_data(dataset_name: str, **kwargs) -> Tuple[List[str], List[int]]:
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# DECISION I — BSIF + K-NN  (ported from 1_BSIF_best.py)
+# DECISION I — BSIF + K-NN 
 # ══════════════════════════════════════════════════════════════════════════════
 
 def read_grayscale_image(path: str) -> np.ndarray:
@@ -508,7 +508,7 @@ def run_decision_i(X: np.ndarray, y: np.ndarray,
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# DECISION II — ViT  (ported from 2_ViT_best.py)
+# DECISION II — ViT 
 # ══════════════════════════════════════════════════════════════════════════════
 
 class PalmVeinDataset(Dataset):
@@ -713,7 +713,7 @@ def weighted_or_fusion(y_true: np.ndarray,
     # We output the prediction that the fusion would yield:
     # - if D1 correct alone (sum=1 ≥ 0.9): accept D1 prediction
     # - if D2 correct alone (sum=1 ≥ 0.9): accept D2 prediction
-    # - if both correct (sum=2): accept D1 (tie-break)
+    # - if both correct (sum=2): accept D1 (tie-break) 
     # - if neither correct (sum=0 < 0.9): reject → output D1 (both wrong anyway)
     fused_pred = np.where(weight_sum >= threshold, y_true, y_pred_d1)
     # Note: weight_sum >= 0.9 means sum ∈ {1, 2}, i.e. at least one was correct.
@@ -909,7 +909,7 @@ def main() -> None:
         all_paths, all_labels = get_data(dataset_name, **cfg)
         print(f"  Images  : {len(all_paths)}")
 
-        # ── Pre-compute BSIF filters and features once (reused all 5 runs) ──
+        # ── Pre-compute BSIF filters and features once 
         print(f"  [BSIF] Loading / building filters ...")
         t_filt = time.perf_counter()
         bsif_filters = load_or_build_bsif_filters(
