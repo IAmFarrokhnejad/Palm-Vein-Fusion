@@ -183,7 +183,7 @@ Modify these constants before running.
 
 ## Authors
 
-**Morteza Farrokhnejad** 
+**Morteza Farrokhnejad**  \
 **Prof. Dr. Hasan Demirel**  
 
 ---
